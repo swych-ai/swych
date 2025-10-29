@@ -4,46 +4,15 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useSmoothScroll } from "@/hooks/use-smooth-scroll";
+import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export default function HeroSection() {
   const { scrollToElement } = useSmoothScroll();
 
   return (
-    <section
-      id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black py-20"
-    >
-      {/* Animated background grid - brighter */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff15_1px,transparent_1px),linear-gradient(to_bottom,#ffffff15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
-
-      {/* Gradient orbs with enhanced animations - brighter */}
-      <motion.div
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.4, 0.6, 0.4],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"
-      />
-      <motion.div
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.4, 0.7, 0.4],
-        }}
-        transition={{
-          duration: 5,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
-        }}
-        className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl"
-      />
-
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 z-10">
+    <section id="home" className="relative">
+      <AuroraBackground className="bg-black">
+        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 z-10">
         <div className="max-w-5xl mx-auto text-center">
           {/* Badge with enhanced animation */}
           <motion.div
@@ -159,28 +128,29 @@ export default function HeroSection() {
             ))}
           </motion.div>
         </div>
-      </div>
+        </div>
 
-      {/* Scroll indicator with enhanced animation */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer"
-        onClick={() => scrollToElement("demos")}
-      >
+        {/* Scroll indicator with enhanced animation */}
         <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-2 hover:border-white/60 transition-colors"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.5 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer"
+          onClick={() => scrollToElement("demos")}
         >
           <motion.div
-            animate={{ opacity: [0, 1, 0] }}
+            animate={{ y: [0, 10, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="w-1 h-2 bg-white/80 rounded-full"
-          />
+            className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-2 hover:border-white/60 transition-colors"
+          >
+            <motion.div
+              animate={{ opacity: [0, 1, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-1 h-2 bg-white/80 rounded-full"
+            />
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </AuroraBackground>
     </section>
   );
 }

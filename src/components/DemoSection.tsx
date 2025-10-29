@@ -1,40 +1,89 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Phone, PhoneOutgoing, Send, Mic, Play } from "lucide-react";
+import { MessageSquare, Phone, PhoneOutgoing, Send, Mic, Play, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { sendMessageToGemini, getWelcomeMessage } from "@/api/gemini-chatbot";
+
+// Add your Gemini API key here or use environment variable
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+
+interface ChatMessage {
+  type: "user" | "ai";
+  text: string;
+}
+
+interface GeminiMessage {
+  role: 'user' | 'model';
+  parts: { text: string }[];
+}
 
 export default function DemosSection() {
-  const [chatMessages, setChatMessages] = useState<Array<{ type: "user" | "ai"; text: string }>>([
-    { type: "ai", text: "Hi! I'm your AI assistant. How can I help you today?" },
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    { type: "ai", text: getWelcomeMessage() },
   ]);
   const [chatInput, setChatInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [chatHistory, setChatHistory] = useState<GeminiMessage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Add ref for chat container
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleChatSend = () => {
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages, isTyping]);
+
+  const handleChatSend = async () => {
     if (!chatInput.trim()) return;
+
+    // Check if API key is configured
+    if (!GEMINI_API_KEY) {
+      setError("Gemini API key not configured. Please add your API key.");
+      return;
+    }
 
     const userMessage = chatInput;
     setChatMessages((prev) => [...prev, { type: "user", text: userMessage }]);
     setChatInput("");
     setIsTyping(true);
+    setError(null);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "I understand your inquiry. Let me help you with that right away!",
-        "Great question! Our AI solutions can definitely assist with that.",
-        "I'm processing your request. Our system can handle this efficiently.",
-        "Thank you for reaching out. I'll connect you with the right solution.",
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setChatMessages((prev) => [...prev, { type: "ai", text: randomResponse }]);
+    try {
+      // Call Gemini API
+      const { response, updatedHistory } = await sendMessageToGemini(
+        userMessage,
+        GEMINI_API_KEY,
+        chatHistory
+      );
+
+      // Update chat history for context
+      setChatHistory(updatedHistory);
+
+      // Add AI response to messages
+      setChatMessages((prev) => [...prev, { type: "ai", text: response }]);
+    } catch (err) {
+      console.error("Chat error:", err);
+      setError(err instanceof Error ? err.message : "Failed to get response. Please try again.");
+      
+      // Add error message to chat
+      setChatMessages((prev) => [
+        ...prev,
+        { 
+          type: "ai", 
+          text: "I apologize, but I'm having trouble connecting right now. Please try again in a moment." 
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -110,7 +159,7 @@ export default function DemosSection() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Chatbot Demo */}
+            {/* Chatbot Demo with Gemini Integration */}
             <TabsContent value="chatbot" className="mt-4">
               <Card className="bg-gradient-to-br from-gray-50 to-white border-gray-200 shadow-lg overflow-hidden">
                 <div className="p-6">
@@ -119,13 +168,28 @@ export default function DemosSection() {
                       <MessageSquare className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">AI Chatbot Demo</h3>
-                      <p className="text-sm text-gray-600">Try our intelligent conversation AI</p>
+                      <h3 className="text-xl font-bold text-gray-900">Swych Chatbot Demo</h3>
+                      <p className="text-sm text-gray-600">Try our AI powered chatbot</p>
                     </div>
                   </div>
 
+                  {/* Error Alert */}
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2"
+                    >
+                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-red-700">{error}</p>
+                    </motion.div>
+                  )}
+
                   {/* Chat messages */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4 h-80 overflow-y-auto space-y-3 border border-gray-200">
+                  <div 
+                    ref={chatContainerRef}
+                    className="bg-gray-50 rounded-lg p-4 mb-4 h-80 overflow-y-auto space-y-3 border border-gray-200 scroll-smooth"
+                  >
                     <AnimatePresence>
                       {chatMessages.map((message, index) => (
                         <motion.div
@@ -155,8 +219,8 @@ export default function DemosSection() {
                           <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
                             <div className="flex space-x-2">
                               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                             </div>
                           </div>
                         </motion.div>
@@ -170,12 +234,14 @@ export default function DemosSection() {
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleChatSend()}
-                      placeholder="Type your message..."
+                      placeholder="Ask about our AI solutions..."
                       className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
+                      disabled={isTyping}
                     />
                     <Button
                       onClick={handleChatSend}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md"
+                      disabled={isTyping || !chatInput.trim()}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Send className="w-4 h-4" />
                     </Button>
