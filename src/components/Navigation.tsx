@@ -70,8 +70,8 @@ export default function Navigation() {
               src="/logo.png"
               alt="Swych.ai Logo"
               width={56}
-              height={56}
-              className="w-12 h-12 sm:w-14 sm:h-14"
+              height={48}
+              className="w-12 h-10 sm:w-14 sm:h-12"
             />
             <span className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
               Swych.ai

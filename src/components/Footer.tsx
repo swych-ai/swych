@@ -48,8 +48,8 @@ export default function Footer() {
                   src="/logo.png"
                   alt="Swych.ai Logo"
                   width={56}
-                  height={56}
-                  className="w-12 h-12 sm:w-14 sm:h-14"
+                  height={48}
+                  className="w-12 h-10 sm:w-14 sm:h-12"
                 />
                 <span className="text-3xl font-bold text-white">Swych.ai</span>
               </motion.div>
