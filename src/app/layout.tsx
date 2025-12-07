@@ -16,12 +16,9 @@ export const metadata: Metadata = {
   title: "Swych.ai - AI-Powered Business Solutions",
   description: "Transform your business with cutting-edge AI chatbots, voice callers, and outbound calling solutions. Empowering growth through intelligent automation.",
   icons: {
-    icon: [
-      { url: "/logo.png", type: "image/png" },
-    ],
-    apple: [
-      { url: "/logo.png", type: "image/png" },
-    ],
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
 };
 
