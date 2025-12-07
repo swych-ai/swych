@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "seed:testimonials": "tsx src/db/seeds/testimonials.ts",
+    "seed:clients": "tsx src/db/seeds/clients.ts"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.1.30",

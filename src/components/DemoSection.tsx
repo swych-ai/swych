@@ -470,7 +470,7 @@ export default function DemosSection() {
                 value={voiceDemoForm.name}
                 onChange={(e) => setVoiceDemoForm({ ...voiceDemoForm, name: e.target.value })}
                 className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500"
-                placeholder="John Doe"
+                placeholder="Your name"
               />
             </div>
 
@@ -485,7 +485,7 @@ export default function DemosSection() {
                 value={voiceDemoForm.email}
                 onChange={(e) => setVoiceDemoForm({ ...voiceDemoForm, email: e.target.value })}
                 className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500"
-                placeholder="john@company.com"
+                placeholder="email@company.com"
               />
             </div>
 

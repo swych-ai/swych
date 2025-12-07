@@ -28,7 +28,7 @@ export default function Footer() {
   };
 
   const socialLinks = [
-    { icon: Instagram, href: "#", label: "Instagram", gradient: "from-pink-500 to-purple-500" },
+    { icon: Instagram, href: "https://www.instagram.com/swych.ai?igsh=a3A1anczdzJ4NW9v&utm_source=qr", label: "Instagram", gradient: "from-pink-500 to-purple-500" },
     { icon: Linkedin, href: "#", label: "LinkedIn", gradient: "from-blue-500 to-blue-600" },
     { icon: Twitter, href: "#", label: "X.com", gradient: "from-gray-700 to-gray-900" },
   ];

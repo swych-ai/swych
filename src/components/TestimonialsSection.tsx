@@ -32,25 +32,36 @@ export default function TestimonialsSection() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch("/api/testimonials");
-      if (!response.ok) {
-        throw new Error("Failed to fetch testimonials");
+      
+      let response;
+      let data;
+      
+      try {
+        response = await fetch("/api/testimonials");
+        data = await response.json();
+      } catch (fetchError) {
+        // Network error or JSON parse error
+        console.error("Error fetching testimonials:", fetchError);
+        setTestimonials([]);
+        setError(null); // Don't show error, just show empty state
+        return;
       }
-      const data = await response.json();
+      
       // Check if data is an array (even if empty)
       if (Array.isArray(data)) {
         setTestimonials(data);
-        if (data.length === 0) {
-          // Empty array is not an error, just no data
-          setError(null);
-        }
+        setError(null); // Clear any previous errors
       } else {
-        throw new Error("Invalid response format");
+        // Invalid format but not a critical error
+        console.warn("Invalid response format, treating as empty");
+        setTestimonials([]);
+        setError(null);
       }
     } catch (err) {
-      setError("Unable to load testimonials");
-      console.error("Error fetching testimonials:", err);
-      setTestimonials([]); // Set empty array on error
+      // Fallback for any other errors
+      console.error("Unexpected error fetching testimonials:", err);
+      setTestimonials([]);
+      setError(null); // Don't show error message
     } finally {
       setIsLoading(false);
     }
