@@ -31,14 +31,26 @@ export default function TestimonialsSection() {
   const fetchTestimonials = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/testimonials");
-      if (!response.ok) throw new Error("Failed to fetch testimonials");
-      const data = await response.json();
-      setTestimonials(data);
       setError(null);
+      const response = await fetch("/api/testimonials");
+      if (!response.ok) {
+        throw new Error("Failed to fetch testimonials");
+      }
+      const data = await response.json();
+      // Check if data is an array (even if empty)
+      if (Array.isArray(data)) {
+        setTestimonials(data);
+        if (data.length === 0) {
+          // Empty array is not an error, just no data
+          setError(null);
+        }
+      } else {
+        throw new Error("Invalid response format");
+      }
     } catch (err) {
       setError("Unable to load testimonials");
       console.error("Error fetching testimonials:", err);
+      setTestimonials([]); // Set empty array on error
     } finally {
       setIsLoading(false);
     }
@@ -73,12 +85,24 @@ export default function TestimonialsSection() {
     );
   }
 
-  if (error || testimonials.length === 0) {
+  if (error) {
     return (
       <section className="relative py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-gray-600">
-            {error || "No testimonials available"}
+            {error}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (testimonials.length === 0) {
+    return (
+      <section className="relative py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-gray-600">
+            No testimonials available at the moment.
           </div>
         </div>
       </section>
@@ -88,14 +112,14 @@ export default function TestimonialsSection() {
   const currentTestimonial = testimonials[currentIndex];
 
   return (
-    <section id="testimonials" className="relative py-20 bg-white overflow-hidden">
+    <section id="testimonials" className="relative py-12 sm:py-16 md:py-20 bg-white overflow-hidden">
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5 }}
             className="inline-flex items-center space-x-2 bg-gray-100 border border-gray-200 rounded-full px-4 py-2 mb-4"
           >
@@ -106,7 +130,7 @@ export default function TestimonialsSection() {
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-3xl sm:text-5xl font-bold mb-4 text-gray-900"
           >
@@ -116,16 +140,16 @@ export default function TestimonialsSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg text-gray-600 max-w-2xl mx-auto"
           >
-            See what our clients say about transforming their business with Swych
+            See what our clients say about transforming their business with Swych.ai
           </motion.p>
         </div>
 
         {/* Testimonial Carousel */}
-        <div className="max-w-4xl mx-auto relative">
+        <div className="max-w-4xl mx-auto relative px-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
@@ -134,7 +158,7 @@ export default function TestimonialsSection() {
               exit={{ opacity: 0, x: -100 }}
               transition={{ duration: 0.5 }}
             >
-              <Card className="bg-gradient-to-br from-gray-50 to-white border-gray-200 shadow-lg p-8 sm:p-10 relative">
+              <Card className="bg-gradient-to-br from-gray-50 to-white border-gray-200 shadow-lg p-6 sm:p-8 md:p-10 relative">
                 {/* Quote icon */}
                 <Quote className="absolute top-8 right-8 w-16 h-16 text-gray-200" />
 
@@ -146,7 +170,7 @@ export default function TestimonialsSection() {
                 </div>
 
                 {/* Testimonial text */}
-                <blockquote className="text-xl sm:text-2xl text-gray-900 leading-relaxed mb-6 relative z-10">
+                <blockquote className="text-lg sm:text-xl md:text-2xl text-gray-900 leading-relaxed mb-4 sm:mb-6 relative z-10">
                   "{currentTestimonial.testimonial}"
                 </blockquote>
 

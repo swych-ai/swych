@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Send email using Resend
     const { data, error } = await resend.emails.send({
-      from: "Swych Contact Form <onboarding@resend.dev>", // You'll change this to your verified domain
+      from: "Swych.ai Contact Form <onboarding@resend.dev>", // You'll change this to your verified domain
       to: ["theswych.ai@gmail.com"],
       replyTo: email,
       subject: `New Enquiry from ${name}`,
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
                 </div>
               </div>
               <div class="footer">
-                <p>This email was sent from the Swych contact form</p>
+                <p>This email was sent from the Swych.ai contact form</p>
               </div>
             </div>
           </body>

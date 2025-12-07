@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +13,8 @@ export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { scrollToElement } = useSmoothScroll();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,8 +25,17 @@ export default function Navigation() {
   }, []);
 
   const handleNavClick = (sectionId: string) => {
-    scrollToElement(sectionId);
     setIsMobileMenuOpen(false);
+    
+    // If we're not on the home page, navigate there first
+    if (pathname !== '/') {
+      // Store the section ID in sessionStorage
+      sessionStorage.setItem('scrollToSection', sectionId);
+      router.push('/');
+    } else {
+      // We're already on home page, just scroll
+      scrollToElement(sectionId);
+    }
   };
 
   const navLinks = [
@@ -39,7 +51,7 @@ export default function Navigation() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full ${
         isScrolled
           ? "bg-black/80 backdrop-blur-lg border-b border-white/10"
           : "bg-transparent"
@@ -48,23 +60,23 @@ export default function Navigation() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <motion.button
-            onClick={() => scrollToElement("home")}
+          <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => handleNavClick("home")}
             className="flex items-center space-x-3 cursor-pointer"
           >
             <Image
-              src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/document-uploads/DeWatermark.ai_1760889750487-removebg-preview-1760889866292.png"
-              alt="Swych Logo"
-              width={40}
-              height={40}
-              className="w-8 h-8 sm:w-10 sm:h-10"
+              src="/logo.png"
+              alt="Swych.ai Logo"
+              width={56}
+              height={56}
+              className="w-12 h-12 sm:w-14 sm:h-14"
             />
             <span className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-              Swych
+              Swych.ai
             </span>
-          </motion.button>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1 lg:space-x-2">

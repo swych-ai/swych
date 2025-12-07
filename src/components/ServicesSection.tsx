@@ -48,14 +48,14 @@ const services = [
 
 export default function ServicesSection() {
   return (
-    <section id="services" className="relative py-20 bg-white">
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="services" className="relative py-12 sm:py-16 md:py-20 bg-white">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 max-w-full">
         {/* Section header */}
         <div className="text-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5 }}
             className="inline-flex items-center space-x-2 bg-gray-100 border border-gray-200 rounded-full px-4 py-2 mb-4"
           >
@@ -66,7 +66,7 @@ export default function ServicesSection() {
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-4 text-gray-900"
           >
@@ -76,7 +76,7 @@ export default function ServicesSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg text-gray-600 max-w-2xl mx-auto"
           >
@@ -87,7 +87,7 @@ export default function ServicesSection() {
         </div>
 
         {/* Services grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {services.map((service, index) => {
             const Icon = service.icon;
             return (
@@ -95,7 +95,7 @@ export default function ServicesSection() {
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: false }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <Card className="group relative h-full bg-gradient-to-br from-gray-50 to-white border-gray-200 shadow-lg p-6 hover:border-gray-300 hover:shadow-xl transition-all duration-300 overflow-hidden">

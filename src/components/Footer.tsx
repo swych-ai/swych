@@ -4,11 +4,9 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { Instagram, Linkedin, Twitter } from "lucide-react";
-import { useSmoothScroll } from "@/hooks/use-smooth-scroll";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const { scrollToElement } = useSmoothScroll();
 
   const footerLinks = {
     Services: [
@@ -23,17 +21,9 @@ export default function Footer() {
       { label: "Testimonials", href: "#testimonials" },
       { label: "Contact", href: "#contact" },
     ],
-    Resources: [
-      { label: "Documentation", href: "#" },
-      { label: "API Reference", href: "#" },
-      { label: "Case Studies", href: "#" },
-      { label: "Blog", href: "#" },
-    ],
     Legal: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Cookie Policy", href: "#" },
-      { label: "GDPR", href: "#" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms of Service", href: "/terms-of-service" },
     ],
   };
 
@@ -45,29 +35,25 @@ export default function Footer() {
 
   return (
     <footer className="relative bg-black border-t border-white/20">
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 sm:gap-8 mb-8 sm:mb-12">
           {/* Brand Column */}
-          <div className="lg:col-span-2">
-            <motion.button
-              onClick={() => scrollToElement("home")}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-block mb-4 cursor-pointer"
-            >
-              <div className="flex items-center space-x-3">
+          <div className="sm:col-span-2 lg:col-span-2">
+            <Link href="/" className="inline-block mb-4">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center space-x-3"
+              >
                 <Image
-                  src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/document-uploads/DeWatermark.ai_1760889750487-removebg-preview-1760889866292.png"
-                  alt="Swych Logo"
-                  width={40}
-                  height={40}
-                  className="w-8 h-8 sm:w-10 sm:h-10"
+                  src="/logo.png"
+                  alt="Swych.ai Logo"
+                  width={56}
+                  height={56}
+                  className="w-12 h-12 sm:w-14 sm:h-14"
                 />
-                <span className="text-3xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-                  Swych
-                </span>
-              </div>
-            </motion.button>
+                <span className="text-3xl font-bold text-white">Swych.ai</span>
+              </motion.div>
+            </Link>
             <p className="text-white/70 mb-6 max-w-sm">
               Transforming businesses with cutting-edge AI solutions. Empowering growth through
               intelligent automation.
@@ -113,55 +99,11 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Newsletter Section */}
-        <div className="border-t border-white/20 pt-12 mb-12">
-          <div className="max-w-2xl">
-            <h3 className="text-xl font-bold text-white mb-2">Stay Updated</h3>
-            <p className="text-white/70 mb-4">
-              Subscribe to our newsletter for the latest AI insights and updates.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/50 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-              <motion.button 
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: "0 10px 25px rgba(255, 255, 255, 0.2)"
-                }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-white text-black hover:bg-gray-100 font-semibold rounded-lg transition-all duration-300 whitespace-nowrap hover:shadow-xl relative overflow-hidden group"
-              >
-                <span className="relative z-10">Subscribe</span>
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  initial={{ x: "-100%" }}
-                  whileHover={{ x: "0%" }}
-                  transition={{ duration: 0.3 }}
-                />
-              </motion.button>
-            </div>
-          </div>
-        </div>
-
         {/* Bottom Bar */}
-        <div className="border-t border-white/20 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-white/60 text-sm">
-            © {currentYear} Swych. All rights reserved.
+        <div className="border-t border-white/20 pt-8 flex flex-col md:flex-row items-center justify-center gap-4">
+          <p className="text-white/60 text-sm text-center">
+            © {currentYear} Swych.ai. All rights reserved.
           </p>
-          <div className="flex items-center space-x-6 text-sm text-white/60">
-            <Link href="#" className="hover:text-white transition-colors">
-              Privacy
-            </Link>
-            <Link href="#" className="hover:text-white transition-colors">
-              Terms
-            </Link>
-            <Link href="#" className="hover:text-white transition-colors">
-              Cookies
-            </Link>
-          </div>
         </div>
       </div>
     </footer>

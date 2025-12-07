@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Phone, PhoneOutgoing, Send, Mic, Play, AlertCircle } from "lucide-react";
+import { MessageSquare, Phone, PhoneOutgoing, Send, Mic, Play, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { sendMessageToGemini, getWelcomeMessage } from "@/api/gemini-chatbot";
 
 // Add your Gemini API key here or use environment variable
@@ -29,7 +31,13 @@ export default function DemosSection() {
   const [chatInput, setChatInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [chatHistory, setChatHistory] = useState<GeminiMessage[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Voice demo dialog state
+  const [isVoiceDemoOpen, setIsVoiceDemoOpen] = useState(false);
+  const [voiceDemoForm, setVoiceDemoForm] = useState({ name: "", email: "" });
+  const [isSubmittingDemo, setIsSubmittingDemo] = useState(false);
+  const [demoSubmitSuccess, setDemoSubmitSuccess] = useState(false);
+  const [demoSubmitError, setDemoSubmitError] = useState("");
   
   // Add ref for chat container
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -46,7 +54,13 @@ export default function DemosSection() {
 
     // Check if API key is configured
     if (!GEMINI_API_KEY) {
-      setError("Gemini API key not configured. Please add your API key.");
+      setChatMessages((prev) => [
+        ...prev,
+        { 
+          type: "ai", 
+          text: "I apologize, but the API is not configured. Please contact support for assistance." 
+        },
+      ]);
       return;
     }
 
@@ -54,7 +68,6 @@ export default function DemosSection() {
     setChatMessages((prev) => [...prev, { type: "user", text: userMessage }]);
     setChatInput("");
     setIsTyping(true);
-    setError(null);
 
     try {
       // Call Gemini API
@@ -71,9 +84,9 @@ export default function DemosSection() {
       setChatMessages((prev) => [...prev, { type: "ai", text: response }]);
     } catch (err) {
       console.error("Chat error:", err);
-      setError(err instanceof Error ? err.message : "Failed to get response. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "Failed to get response. Please try again.";
       
-      // Add error message to chat
+      // Add error message to chat only (not outside)
       setChatMessages((prev) => [
         ...prev,
         { 
@@ -86,15 +99,58 @@ export default function DemosSection() {
     }
   };
 
+  const handleVoiceDemoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingDemo(true);
+    setDemoSubmitError("");
+    setDemoSubmitSuccess(false);
+
+    try {
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: voiceDemoForm.name,
+          email: voiceDemoForm.email,
+          company: "",
+          phone: "",
+          message: `Voice Demo Request - Name: ${voiceDemoForm.name}, Email: ${voiceDemoForm.email}`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send request");
+      }
+
+      setDemoSubmitSuccess(true);
+      setVoiceDemoForm({ name: "", email: "" });
+      
+      // Close dialog after 2 seconds
+      setTimeout(() => {
+        setIsVoiceDemoOpen(false);
+        setDemoSubmitSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error submitting voice demo request:", error);
+      setDemoSubmitError(error instanceof Error ? error.message : "Failed to send request. Please try again.");
+    } finally {
+      setIsSubmittingDemo(false);
+    }
+  };
+
   return (
-    <section id="demos" className="relative py-20 bg-white">
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="demos" className="relative py-12 sm:py-16 md:py-20 bg-white">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 max-w-full">
         {/* Section header */}
         <div className="text-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5 }}
             className="inline-flex items-center space-x-2 bg-gray-100 border border-gray-200 rounded-full px-4 py-2 mb-4"
           >
@@ -105,7 +161,7 @@ export default function DemosSection() {
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-3xl sm:text-5xl font-bold mb-4 text-gray-900"
           >
@@ -115,7 +171,7 @@ export default function DemosSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg text-gray-600 max-w-2xl mx-auto"
           >
@@ -127,12 +183,12 @@ export default function DemosSection() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: false }}
           transition={{ duration: 0.5, delay: 0.3 }}
           className="max-w-5xl mx-auto"
         >
           <Tabs defaultValue="chatbot" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-100 border border-gray-200 p-1 mb-6">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100 border border-gray-200 p-1 mb-4 sm:mb-6">
               <TabsTrigger
                 value="chatbot"
                 className="data-[state=active]:bg-white data-[state=active]:text-purple-600 data-[state=active]:shadow-sm text-gray-700"
@@ -173,22 +229,10 @@ export default function DemosSection() {
                     </div>
                   </div>
 
-                  {/* Error Alert */}
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2"
-                    >
-                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-red-700">{error}</p>
-                    </motion.div>
-                  )}
-
                   {/* Chat messages */}
                   <div 
                     ref={chatContainerRef}
-                    className="bg-gray-50 rounded-lg p-4 mb-4 h-80 overflow-y-auto space-y-3 border border-gray-200 scroll-smooth"
+                    className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4 h-64 sm:h-72 md:h-80 overflow-y-auto space-y-2 sm:space-y-3 border border-gray-200 scroll-smooth"
                   >
                     <AnimatePresence>
                       {chatMessages.map((message, index) => (
@@ -200,7 +244,7 @@ export default function DemosSection() {
                           className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                            className={`max-w-[85%] sm:max-w-[80%] rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 ${
                               message.type === "user"
                                 ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
                                 : "bg-white border border-gray-200 text-gray-800 shadow-sm"
@@ -264,27 +308,27 @@ export default function DemosSection() {
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg p-6 text-center border border-gray-200">
+                  <div className="bg-gray-50 rounded-lg p-4 sm:p-6 text-center border border-gray-200">
                     <div className="max-w-md mx-auto">
-                      <div className="relative mb-6">
+                      <div className="relative mb-4 sm:mb-6">
                         <motion.div
                           animate={{ scale: [1, 1.1, 1] }}
                           transition={{ duration: 2, repeat: Infinity }}
-                          className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg"
+                          className="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg"
                         >
-                          <Mic className="w-16 h-16 text-white" />
+                          <Mic className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
                         </motion.div>
                         <div className="absolute inset-0 flex items-center justify-center">
                           <motion.div
                             animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
                             transition={{ duration: 2, repeat: Infinity }}
-                            className="w-32 h-32 rounded-full bg-blue-500/30"
+                            className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-blue-500/30"
                           />
                         </div>
                       </div>
 
-                      <h4 className="text-2xl font-bold text-gray-900 mb-3">Voice AI Ready</h4>
-                      <p className="text-gray-600 mb-4">
+                      <h4 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">Voice AI Ready</h4>
+                      <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                         Our AI voice system uses advanced speech synthesis and natural language
                         understanding to handle customer calls with human-like conversation.
                       </p>
@@ -310,7 +354,10 @@ export default function DemosSection() {
                         </div>
                       </div>
 
-                      <Button className="mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-md">
+                      <Button 
+                        onClick={() => setIsVoiceDemoOpen(true)}
+                        className="mt-4 sm:mt-6 w-full sm:w-auto bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-md text-sm sm:text-base px-6 sm:px-8"
+                      >
                         Request Voice Demo
                       </Button>
                     </div>
@@ -350,7 +397,7 @@ export default function DemosSection() {
                             key={index}
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
+                            viewport={{ once: false }}
                             transition={{ delay: index * 0.1 }}
                             className="bg-white rounded-lg p-3 text-center border border-gray-200 shadow-sm"
                           >
@@ -377,7 +424,7 @@ export default function DemosSection() {
                             key={index}
                             initial={{ opacity: 0, x: -20 }}
                             whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
+                            viewport={{ once: false }}
                             transition={{ delay: index * 0.1 }}
                             className="flex items-center space-x-3 bg-white rounded-lg p-2 border border-gray-200"
                           >
@@ -398,6 +445,107 @@ export default function DemosSection() {
           </Tabs>
         </motion.div>
       </div>
+
+      {/* Voice Demo Request Dialog */}
+      <Dialog open={isVoiceDemoOpen} onOpenChange={setIsVoiceDemoOpen}>
+        <DialogContent className="sm:max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Schedule Voice Demo
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Fill in your details and we'll get back to you to schedule a personalized voice AI demo.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleVoiceDemoSubmit} className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="demo-name" className="text-gray-900 mb-2 block">
+                Full Name *
+              </Label>
+              <Input
+                id="demo-name"
+                type="text"
+                required
+                value={voiceDemoForm.name}
+                onChange={(e) => setVoiceDemoForm({ ...voiceDemoForm, name: e.target.value })}
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500"
+                placeholder="John Doe"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="demo-email" className="text-gray-900 mb-2 block">
+                Email Address *
+              </Label>
+              <Input
+                id="demo-email"
+                type="email"
+                required
+                value={voiceDemoForm.email}
+                onChange={(e) => setVoiceDemoForm({ ...voiceDemoForm, email: e.target.value })}
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500"
+                placeholder="john@company.com"
+              />
+            </div>
+
+            {/* Success Message */}
+            {demoSubmitSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center space-x-2 text-green-700 bg-green-50 border border-green-200 rounded-lg p-4"
+              >
+                <span>✓ Request sent successfully! We'll contact you soon.</span>
+              </motion.div>
+            )}
+
+            {/* Error Message */}
+            {demoSubmitError && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center space-x-2 text-red-700 bg-red-50 border border-red-200 rounded-lg p-4"
+              >
+                <span>{demoSubmitError}</span>
+              </motion.div>
+            )}
+
+            <div className="flex space-x-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsVoiceDemoOpen(false);
+                  setVoiceDemoForm({ name: "", email: "" });
+                  setDemoSubmitError("");
+                  setDemoSubmitSuccess(false);
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmittingDemo}
+                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white disabled:opacity-50"
+              >
+                {isSubmittingDemo ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Sending...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center space-x-2">
+                    <Send className="w-4 h-4" />
+                    <span>Send Request</span>
+                  </div>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

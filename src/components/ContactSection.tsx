@@ -68,14 +68,14 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact" className="relative py-20 bg-white">
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="contact" className="relative py-12 sm:py-16 md:py-20 bg-white">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 max-w-full">
         {/* Section header */}
         <div className="text-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5 }}
             className="inline-flex items-center space-x-2 bg-gray-100 border border-gray-200 rounded-full px-4 py-2 mb-4"
           >
@@ -86,7 +86,7 @@ export default function ContactSection() {
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-3xl sm:text-5xl font-bold mb-4 text-gray-900"
           >
@@ -96,7 +96,7 @@ export default function ContactSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg text-gray-600 max-w-2xl mx-auto"
           >
@@ -105,15 +105,15 @@ export default function ContactSection() {
           </motion.p>
         </div>
 
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5 }}
           >
-            <Card className="bg-gradient-to-br from-gray-50 to-white border-gray-200 shadow-lg p-6">
+            <Card className="bg-gradient-to-br from-gray-50 to-white border-gray-200 shadow-lg p-4 sm:p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Name */}
                 <div>
@@ -247,7 +247,7 @@ export default function ContactSection() {
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
