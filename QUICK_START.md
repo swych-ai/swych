@@ -49,6 +49,12 @@ In your project root (`d:\swych\swych\.env.local`), create a file with:
 ```env
 TURSO_CONNECTION_URL=libsql://your-database-url-here.turso.io
 TURSO_AUTH_TOKEN=your-auth-token-here
+
+# Resend Email API (for contact form)
+RESEND_API_KEY=your-resend-api-key-here
+
+# Gemini API (for chatbot - optional)
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
 **Replace:**
