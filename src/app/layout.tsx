@@ -15,11 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Swych.ai - AI-Powered Business Solutions",
   description: "Transform your business with cutting-edge AI chatbots, voice callers, and outbound calling solutions. Empowering growth through intelligent automation.",
-  icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
-  },
 };
 
 export default function RootLayout({

@@ -16,19 +16,24 @@ export async function POST(request: NextRequest) {
     const { name, email, company, phone, message } = body;
 
     // Validate required fields
-    if (!name || !email || !message) {
+    if (!name || !email) {
       return NextResponse.json(
-        { error: "Name, email, and message are required" },
+        { error: "Name and email are required" },
         { status: 400 }
       );
     }
+
+    // Use message if provided, otherwise create a default message
+    const emailMessage = message || `Contact request from ${name} (${email})`;
 
     // Send email using Resend
     const { data, error } = await resend.emails.send({
       from: "Swych.ai Contact Form <onboarding@resend.dev>", // You'll change this to your verified domain
       to: ["theswych.ai@gmail.com"],
       replyTo: email,
-      subject: `New Enquiry from ${name}`,
+      subject: message?.includes('Voice Demo Request') 
+        ? `Voice Demo Request from ${name}` 
+        : `New Enquiry from ${name}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -112,7 +117,7 @@ export async function POST(request: NextRequest) {
                 
                 <div class="field">
                   <div class="label">💬 Message:</div>
-                  <div class="value">${message.replace(/\n/g, '<br>')}</div>
+                  <div class="value">${emailMessage.replace(/\n/g, '<br>')}</div>
                 </div>
               </div>
               <div class="footer">

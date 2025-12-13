@@ -84,14 +84,32 @@ export default function DemosSection() {
       setChatMessages((prev) => [...prev, { type: "ai", text: response }]);
     } catch (err) {
       console.error("Chat error:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to get response. Please try again.";
+      
+      // Provide more helpful error messages
+      let errorMessage = "I apologize, but I'm having trouble connecting right now. Please try again in a moment.";
+      
+      if (err instanceof Error) {
+        if (err.message.includes('API key') || err.message.includes('401') || err.message.includes('403')) {
+          errorMessage = "The AI service is not properly configured. Please contact support for assistance.";
+        } else if (err.message.includes('network') || err.message.includes('fetch')) {
+          errorMessage = "I'm having trouble connecting to the AI service. Please check your internet connection and try again.";
+        } else if (err.message.includes('429')) {
+          errorMessage = "The service is currently busy. Please wait a moment and try again.";
+        }
+        
+        // Log detailed error for debugging
+        console.error("Gemini API error details:", {
+          message: err.message,
+          stack: err.stack
+        });
+      }
       
       // Add error message to chat only (not outside)
       setChatMessages((prev) => [
         ...prev,
         { 
           type: "ai", 
-          text: "I apologize, but I'm having trouble connecting right now. Please try again in a moment." 
+          text: errorMessage
         },
       ]);
     } finally {
@@ -123,7 +141,14 @@ export default function DemosSection() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to send request");
+        // Provide more specific error messages
+        if (response.status === 503) {
+          throw new Error("Email service is not configured. Please contact support.");
+        }
+        if (response.status === 400) {
+          throw new Error(data.error || "Please fill in all required fields.");
+        }
+        throw new Error(data.error || "Failed to send request. Please try again.");
       }
 
       setDemoSubmitSuccess(true);
@@ -136,7 +161,18 @@ export default function DemosSection() {
       }, 2000);
     } catch (error) {
       console.error("Error submitting voice demo request:", error);
-      setDemoSubmitError(error instanceof Error ? error.message : "Failed to send request. Please try again.");
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to send request. Please try again.";
+      setDemoSubmitError(errorMessage);
+      
+      // Log to console for debugging
+      if (error instanceof Error) {
+        console.error("Voice demo submission error details:", {
+          message: error.message,
+          stack: error.stack
+        });
+      }
     } finally {
       setIsSubmittingDemo(false);
     }
@@ -521,7 +557,7 @@ export default function DemosSection() {
                   setDemoSubmitError("");
                   setDemoSubmitSuccess(false);
                 }}
-                className="flex-1"
+                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
               >
                 Cancel
               </Button>
