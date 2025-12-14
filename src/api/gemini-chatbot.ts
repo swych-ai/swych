@@ -92,7 +92,7 @@ export async function sendMessageToGemini(
       },
       {
         role: 'model',
-        parts: [{ text: 'Understood. I will assist customers with information about Swych’s AI communication solutions.' }]
+        parts: [{ text: "Understood. I will assist customers with information about Swych’s AI communication solutions." }]
       },
       ...chatHistory,
       {
