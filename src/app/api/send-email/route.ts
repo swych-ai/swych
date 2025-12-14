@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
       replyTo: email,
       subject: message?.includes('Voice Demo Request') 
         ? `Voice Demo Request from ${name}` 
+        : message?.includes('Outbound Campaign Request')
+        ? `Outbound Campaign Request from ${name}`
         : `New Enquiry from ${name}`,
       html: `
         <!DOCTYPE html>
