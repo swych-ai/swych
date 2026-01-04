@@ -79,6 +79,14 @@ export default function DemosSection() {
       let errorMessage = "I apologize, but I'm having trouble connecting right now. Please try again in a moment.";
 
       if (err instanceof Error) {
+        // Log detailed error for debugging
+        console.error("Gemini API error details:", err);
+
+        // Check if there's an inner error object or response text we can log
+        if ('details' in err) {
+          console.error("Server-side error details:", (err as any).details);
+        }
+
         if (err.message.includes('API key') || err.message.includes('401') || err.message.includes('403')) {
           errorMessage = "The AI service is not properly configured. Please contact support for assistance.";
         } else if (err.message.includes('network') || err.message.includes('fetch')) {
@@ -86,12 +94,6 @@ export default function DemosSection() {
         } else if (err.message.includes('429')) {
           errorMessage = "The service is currently busy. Please wait a moment and try again.";
         }
-
-        // Log detailed error for debugging
-        console.error("Gemini API error details:", {
-          message: err.message,
-          stack: err.stack
-        });
       }
 
       // Add error message to chat only (not outside)
