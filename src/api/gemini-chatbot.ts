@@ -24,7 +24,9 @@ export async function sendMessageToGemini(
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data?.error || "AI request failed");
+    const error = new Error(data?.error || "AI request failed");
+    (error as any).details = data?.details;
+    throw error;
   }
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
