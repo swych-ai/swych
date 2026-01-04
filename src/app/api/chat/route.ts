@@ -87,9 +87,11 @@ export async function POST(req: NextRequest) {
             // Debug info to help user identify evn var issues
             const keyDebug = {
                 length: apiKey?.length || 0,
-                firstChar: apiKey?.charAt(0) || "N/A",
-                lastChar: apiKey?.charAt(apiKey.length - 1) || "N/A",
-                hasQuotes: apiKey?.includes('"') || apiKey?.includes("'")
+                prefix: apiKey?.substring(0, 5) || "N/A",
+                suffix: apiKey?.substring(apiKey.length - 5) || "N/A",
+                hasQuotes: apiKey?.includes('"') || apiKey?.includes("'"),
+                hasWhitespace: /\s/.test(apiKey || ""),
+                hexStart: apiKey ? Buffer.from(apiKey.substring(0, 4)).toString('hex') : "N/A"
             };
 
             return NextResponse.json(
