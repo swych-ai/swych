@@ -60,42 +60,42 @@ export default function Navigation() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             onClick={() => handleNavClick("home")}
             className="flex items-center space-x-3 cursor-pointer"
-          >
-            <Image
+            >
+              <Image
               src="/logo.png"
               alt="Swych.ai Logo"
               width={56}
               height={48}
               className="w-12 h-10 sm:w-14 sm:h-12"
-            />
-            <span className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+              />
+              <span className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
               Swych.ai
-            </span>
-          </motion.div>
+              </span>
+            </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
             {navLinks.map((link) => (
-              <Button
+                <Button
                 key={link.id}
-                variant="ghost"
+                  variant="ghost"
                 onClick={() => handleNavClick(link.id)}
-                className="text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
-              >
-                {link.label}
-              </Button>
+                  className="text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  {link.label}
+                </Button>
             ))}
             <Button 
               onClick={() => handleNavClick("contact")}
               className="ml-4 bg-white text-black hover:bg-gray-200 transition-colors"
             >
-              Get Started
-            </Button>
+                Get Started
+              </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -121,21 +121,21 @@ export default function Navigation() {
           >
             <div className="container mx-auto px-4 py-4 flex flex-col space-y-2">
               {navLinks.map((link) => (
-                <Button
+                  <Button
                   key={link.id}
-                  variant="ghost"
+                    variant="ghost"
                   onClick={() => handleNavClick(link.id)}
-                  className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5"
-                >
-                  {link.label}
-                </Button>
+                    className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5"
+                  >
+                    {link.label}
+                  </Button>
               ))}
               <Button 
                 onClick={() => handleNavClick("contact")}
                 className="w-full bg-white text-black hover:bg-gray-200"
               >
-                Get Started
-              </Button>
+                  Get Started
+                </Button>
             </div>
           </motion.div>
         )}

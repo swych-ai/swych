@@ -9,7 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { getWelcomeMessage } from "@/api/gemini-chatbot";
+import { sendMessageToGemini, getWelcomeMessage } from "@/api/gemini-chatbot";
+
+// Add your Gemini API key here or use environment variable
+// Add your Gemini API key here or use environment variable
+// Server-side API key is used
+
 
 interface ChatMessage {
   type: "user" | "ai";
@@ -28,7 +33,7 @@ export default function DemosSection() {
   const [chatInput, setChatInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [chatHistory, setChatHistory] = useState<GeminiMessage[]>([]);
-  
+
   // Voice demo dialog state
   const [isVoiceDemoOpen, setIsVoiceDemoOpen] = useState(false);
   const [voiceDemoForm, setVoiceDemoForm] = useState({ name: "", email: "" });
@@ -36,13 +41,6 @@ export default function DemosSection() {
   const [demoSubmitSuccess, setDemoSubmitSuccess] = useState(false);
   const [demoSubmitError, setDemoSubmitError] = useState("");
 
-  // Outbound campaign dialog state
-  const [isOutboundCampaignOpen, setIsOutboundCampaignOpen] = useState(false);
-  const [outboundCampaignForm, setOutboundCampaignForm] = useState({ name: "", email: "" });
-  const [isSubmittingCampaign, setIsSubmittingCampaign] = useState(false);
-  const [campaignSubmitSuccess, setCampaignSubmitSuccess] = useState(false);
-  const [campaignSubmitError, setCampaignSubmitError] = useState("");
-  
   // Add ref for chat container
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -56,62 +54,57 @@ export default function DemosSection() {
   const handleChatSend = async () => {
     if (!chatInput.trim()) return;
 
+
+
     const userMessage = chatInput;
     setChatMessages((prev) => [...prev, { type: "user", text: userMessage }]);
     setChatInput("");
     setIsTyping(true);
 
     try {
-      // Call our API route instead of calling Gemini directly
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          chatHistory: chatHistory,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to get response from AI");
-      }
+      // Call Gemini API
+      const response = await sendMessageToGemini(
+        userMessage,
+        chatHistory
+      );
 
       // Update chat history for context
-      setChatHistory(data.updatedHistory);
+      const updatedHistory: GeminiMessage[] = [
+        ...chatHistory,
+        { role: 'user', parts: [{ text: userMessage }] },
+        { role: 'model', parts: [{ text: response }] }
+      ];
+      setChatHistory(updatedHistory);
 
       // Add AI response to messages
-      setChatMessages((prev) => [...prev, { type: "ai", text: data.response }]);
+      setChatMessages((prev) => [...prev, { type: "ai", text: response }]);
     } catch (err) {
       console.error("Chat error:", err);
-      
+
       // Provide more helpful error messages
       let errorMessage = "I apologize, but I'm having trouble connecting right now. Please try again in a moment.";
-      
+
       if (err instanceof Error) {
-        if (err.message.includes('not configured') || err.message.includes('503')) {
+        if (err.message.includes('API key') || err.message.includes('401') || err.message.includes('403')) {
           errorMessage = "The AI service is not properly configured. Please contact support for assistance.";
         } else if (err.message.includes('network') || err.message.includes('fetch')) {
           errorMessage = "I'm having trouble connecting to the AI service. Please check your internet connection and try again.";
         } else if (err.message.includes('429')) {
           errorMessage = "The service is currently busy. Please wait a moment and try again.";
         }
-        
+
         // Log detailed error for debugging
-        console.error("Chat API error details:", {
+        console.error("Gemini API error details:", {
           message: err.message,
           stack: err.stack
         });
       }
-      
+
       // Add error message to chat only (not outside)
       setChatMessages((prev) => [
         ...prev,
-        { 
-          type: "ai", 
+        {
+          type: "ai",
           text: errorMessage
         },
       ]);
@@ -137,7 +130,8 @@ export default function DemosSection() {
           email: voiceDemoForm.email,
           company: "",
           phone: "",
-          message: `Voice Demo Request - Name: ${voiceDemoForm.name}, Email: ${voiceDemoForm.email}`,
+          industry: voiceDemoForm.industry,
+          message: `Voice Demo Request - Name: ${voiceDemoForm.name}, Email: ${voiceDemoForm.email}, Industry: ${voiceDemoForm.industry}`,
         }),
       });
 
@@ -155,8 +149,8 @@ export default function DemosSection() {
       }
 
       setDemoSubmitSuccess(true);
-      setVoiceDemoForm({ name: "", email: "" });
-      
+      setVoiceDemoForm({ name: "", email: "", industry: "" });
+
       // Close dialog after 2 seconds
       setTimeout(() => {
         setIsVoiceDemoOpen(false);
@@ -164,11 +158,11 @@ export default function DemosSection() {
       }, 2000);
     } catch (error) {
       console.error("Error submitting voice demo request:", error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
+      const errorMessage = error instanceof Error
+        ? error.message
         : "Failed to send request. Please try again.";
       setDemoSubmitError(errorMessage);
-      
+
       // Log to console for debugging
       if (error instanceof Error) {
         console.error("Voice demo submission error details:", {
@@ -178,67 +172,6 @@ export default function DemosSection() {
       }
     } finally {
       setIsSubmittingDemo(false);
-    }
-  };
-
-  const handleOutboundCampaignSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmittingCampaign(true);
-    setCampaignSubmitError("");
-    setCampaignSubmitSuccess(false);
-
-    try {
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: outboundCampaignForm.name,
-          email: outboundCampaignForm.email,
-          company: "",
-          phone: "",
-          message: `Outbound Campaign Request - Name: ${outboundCampaignForm.name}, Email: ${outboundCampaignForm.email}`,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Provide more specific error messages
-        if (response.status === 503) {
-          throw new Error("Email service is not configured. Please contact support.");
-        }
-        if (response.status === 400) {
-          throw new Error(data.error || "Please fill in all required fields.");
-        }
-        throw new Error(data.error || "Failed to send request. Please try again.");
-      }
-
-      setCampaignSubmitSuccess(true);
-      setOutboundCampaignForm({ name: "", email: "" });
-      
-      // Close dialog after 2 seconds
-      setTimeout(() => {
-        setIsOutboundCampaignOpen(false);
-        setCampaignSubmitSuccess(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Error submitting outbound campaign request:", error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Failed to send request. Please try again.";
-      setCampaignSubmitError(errorMessage);
-      
-      // Log to console for debugging
-      if (error instanceof Error) {
-        console.error("Outbound campaign submission error details:", {
-          message: error.message,
-          stack: error.stack
-        });
-      }
-    } finally {
-      setIsSubmittingCampaign(false);
     }
   };
 
@@ -330,7 +263,7 @@ export default function DemosSection() {
                   </div>
 
                   {/* Chat messages */}
-                  <div 
+                  <div
                     ref={chatContainerRef}
                     className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4 h-64 sm:h-72 md:h-80 overflow-y-auto space-y-2 sm:space-y-3 border border-gray-200 scroll-smooth"
                   >
@@ -344,11 +277,10 @@ export default function DemosSection() {
                           className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`max-w-[85%] sm:max-w-[80%] rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 ${
-                              message.type === "user"
-                                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
-                                : "bg-white border border-gray-200 text-gray-800 shadow-sm"
-                            }`}
+                            className={`max-w-[85%] sm:max-w-[80%] rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 ${message.type === "user"
+                              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
+                              : "bg-white border border-gray-200 text-gray-800 shadow-sm"
+                              }`}
                           >
                             {message.text}
                           </div>
@@ -454,7 +386,7 @@ export default function DemosSection() {
                         </div>
                       </div>
 
-                      <Button 
+                      <Button
                         onClick={() => setIsVoiceDemoOpen(true)}
                         className="mt-4 sm:mt-6 w-full sm:w-auto bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-md text-sm sm:text-base px-6 sm:px-8"
                       >
@@ -534,10 +466,7 @@ export default function DemosSection() {
                         ))}
                       </div>
 
-                      <Button 
-                        onClick={() => setIsOutboundCampaignOpen(true)}
-                        className="mt-6 w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-md"
-                      >
+                      <Button className="mt-6 w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-md">
                         Start Outbound Campaign
                       </Button>
                     </div>
@@ -560,7 +489,7 @@ export default function DemosSection() {
               Fill in your details and we'll get back to you to schedule a personalized voice AI demo.
             </DialogDescription>
           </DialogHeader>
-          
+
           <form onSubmit={handleVoiceDemoSubmit} className="space-y-4 mt-4">
             <div>
               <Label htmlFor="demo-name" className="text-gray-900 mb-2 block">
@@ -574,6 +503,20 @@ export default function DemosSection() {
                 onChange={(e) => setVoiceDemoForm({ ...voiceDemoForm, name: e.target.value })}
                 className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500"
                 placeholder="Your name"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="demo-industry" className="text-gray-900 mb-2 block">
+                Industry
+              </Label>
+              <Input
+                id="demo-industry"
+                type="text"
+                value={voiceDemoForm.industry}
+                onChange={(e) => setVoiceDemoForm({ ...voiceDemoForm, industry: e.target.value })}
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500"
+                placeholder="e.g. Healthcare, Real Estate"
               />
             </div>
 
@@ -620,7 +563,7 @@ export default function DemosSection() {
                 variant="outline"
                 onClick={() => {
                   setIsVoiceDemoOpen(false);
-                  setVoiceDemoForm({ name: "", email: "" });
+                  setVoiceDemoForm({ name: "", email: "", industry: "" });
                   setDemoSubmitError("");
                   setDemoSubmitSuccess(false);
                 }}
@@ -634,107 +577,6 @@ export default function DemosSection() {
                 className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white disabled:opacity-50"
               >
                 {isSubmittingDemo ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Sending...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center space-x-2">
-                    <Send className="w-4 h-4" />
-                    <span>Send Request</span>
-                  </div>
-                )}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Outbound Campaign Request Dialog */}
-      <Dialog open={isOutboundCampaignOpen} onOpenChange={setIsOutboundCampaignOpen}>
-        <DialogContent className="sm:max-w-md bg-white">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-900">
-              Start Outbound Campaign
-            </DialogTitle>
-            <DialogDescription className="text-gray-600">
-              Fill in your details and we'll get back to you to set up your outbound calling campaign.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <form onSubmit={handleOutboundCampaignSubmit} className="space-y-4 mt-4">
-            <div>
-              <Label htmlFor="campaign-name" className="text-gray-900 mb-2 block">
-                Full Name *
-              </Label>
-              <Input
-                id="campaign-name"
-                type="text"
-                required
-                value={outboundCampaignForm.name}
-                onChange={(e) => setOutboundCampaignForm({ ...outboundCampaignForm, name: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-green-500"
-                placeholder="Your name"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="campaign-email" className="text-gray-900 mb-2 block">
-                Email Address *
-              </Label>
-              <Input
-                id="campaign-email"
-                type="email"
-                required
-                value={outboundCampaignForm.email}
-                onChange={(e) => setOutboundCampaignForm({ ...outboundCampaignForm, email: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-green-500"
-                placeholder="email@company.com"
-              />
-            </div>
-
-            {/* Success Message */}
-            {campaignSubmitSuccess && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center space-x-2 text-green-700 bg-green-50 border border-green-200 rounded-lg p-4"
-              >
-                <span>✓ Request sent successfully! We'll contact you soon.</span>
-              </motion.div>
-            )}
-
-            {/* Error Message */}
-            {campaignSubmitError && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center space-x-2 text-red-700 bg-red-50 border border-red-200 rounded-lg p-4"
-              >
-                <span>{campaignSubmitError}</span>
-              </motion.div>
-            )}
-
-            <div className="flex space-x-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsOutboundCampaignOpen(false);
-                  setOutboundCampaignForm({ name: "", email: "" });
-                  setCampaignSubmitError("");
-                  setCampaignSubmitSuccess(false);
-                }}
-                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmittingCampaign}
-                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white disabled:opacity-50"
-              >
-                {isSubmittingCampaign ? (
                   <div className="flex items-center justify-center space-x-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Sending...</span>

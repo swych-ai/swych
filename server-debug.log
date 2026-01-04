@@ -1,0 +1,12 @@
+[2026-01-04T08:46:46.821Z] API Key present: true, Length: 39, First 4: AIza
+[2026-01-04T08:46:46.829Z] Contents count: 1
+[2026-01-04T08:46:46.831Z] Fetching URL: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=HIDDEN
+[2026-01-04T08:46:47.907Z] Response Status: 404
+[2026-01-04T08:46:47.909Z] Response Error Body: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+

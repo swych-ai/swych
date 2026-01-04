@@ -15,6 +15,7 @@ export default function ContactSection() {
     email: "",
     company: "",
     phone: "",
+    industry: "",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,6 +55,7 @@ export default function ContactSection() {
         email: "",
         company: "",
         phone: "",
+        industry: "",
         message: "",
       });
 
@@ -162,6 +164,22 @@ export default function ContactSection() {
                     onChange={handleChange}
                     className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500"
                     placeholder="Your Company"
+                  />
+                </div>
+
+                {/* Industry */}
+                <div>
+                  <Label htmlFor="industry" className="text-gray-900 mb-2 block">
+                    Industry
+                  </Label>
+                  <Input
+                    id="industry"
+                    name="industry"
+                    type="text"
+                    value={formData.industry}
+                    onChange={handleChange}
+                    className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500"
+                    placeholder="e.g. Healthcare, Finance"
                   />
                 </div>
 

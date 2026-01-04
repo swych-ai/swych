@@ -49,13 +49,13 @@ export default function TestimonialsSection() {
       
       // Check if data is an array (even if empty)
       if (Array.isArray(data)) {
-        setTestimonials(data);
+      setTestimonials(data);
         setError(null); // Clear any previous errors
       } else {
         // Invalid format but not a critical error
         console.warn("Invalid response format, treating as empty");
         setTestimonials([]);
-        setError(null);
+      setError(null);
       }
     } catch (err) {
       // Fallback for any other errors

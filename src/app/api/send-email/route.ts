@@ -5,18 +5,20 @@ export async function POST(request: NextRequest) {
   try {
     // Check if Resend API key is available
     if (!process.env.RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not defined");
       return NextResponse.json(
-        { error: "Email service not configured" },
+        { error: "Email service configuration missing" },
         { status: 503 }
       );
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const body = await request.json();
-    const { name, email, company, phone, message } = body;
+    const { name, email, company, phone, industry, message } = body;
 
     // Validate required fields
     if (!name || !email) {
+      console.log("Validation failed: missing name or email");
       return NextResponse.json(
         { error: "Name and email are required" },
         { status: 400 }
@@ -26,15 +28,17 @@ export async function POST(request: NextRequest) {
     // Use message if provided, otherwise create a default message
     const emailMessage = message || `Contact request from ${name} (${email})`;
 
+    console.log(`Sending email to theswych.ai@gmail.com from ${email}`);
+
     // Send email using Resend
+    // Note: For testing without a domain, 'from' must be 'onboarding@resend.dev'
+    // and 'to' must be the verified email address (likely theswych.ai@gmail.com)
     const { data, error } = await resend.emails.send({
-      from: "Swych.ai Contact Form <onboarding@resend.dev>", // You'll change this to your verified domain
+      from: "Swych.ai Contact <onboarding@resend.dev>",
       to: ["theswych.ai@gmail.com"],
       replyTo: email,
-      subject: message?.includes('Voice Demo Request') 
-        ? `Voice Demo Request from ${name}` 
-        : message?.includes('Outbound Campaign Request')
-        ? `Outbound Campaign Request from ${name}`
+      subject: message?.includes('Voice Demo Request')
+        ? `Voice Demo Request from ${name}`
         : `New Enquiry from ${name}`,
       html: `
         <!DOCTYPE html>
@@ -109,6 +113,13 @@ export async function POST(request: NextRequest) {
                     <div class="value">${company}</div>
                   </div>
                 ` : ''}
+
+                ${industry ? `
+                  <div class="field">
+                    <div class="label">🏭 Industry:</div>
+                    <div class="value">${industry}</div>
+                  </div>
+                ` : ''}
                 
                 ${phone ? `
                   <div class="field">
@@ -132,9 +143,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      console.error("Resend error:", error);
+      console.error("Resend error details:", JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: "Failed to send email" },
+        { error: `Failed to send email: ${error.message}` },
         { status: 500 }
       );
     }
