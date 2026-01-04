@@ -83,8 +83,21 @@ export async function POST(req: NextRequest) {
         if (!response || !response.ok) {
             // If all models failed, return the error from the last attempt
             console.error("All Gemini models failed. Last error:", lastError);
+
+            // Debug info to help user identify evn var issues
+            const keyDebug = {
+                length: apiKey?.length || 0,
+                firstChar: apiKey?.charAt(0) || "N/A",
+                lastChar: apiKey?.charAt(apiKey.length - 1) || "N/A",
+                hasQuotes: apiKey?.includes('"') || apiKey?.includes("'")
+            };
+
             return NextResponse.json(
-                { error: "Gemini API failed", details: lastError },
+                {
+                    error: "Gemini API failed",
+                    details: lastError,
+                    keyDebug: keyDebug
+                },
                 { status: response ? response.status : 500 }
             );
         }
