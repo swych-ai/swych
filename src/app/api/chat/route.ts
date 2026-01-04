@@ -42,36 +42,55 @@ export async function POST(req: NextRequest) {
             parts: m.parts,
         }));
 
-        // Using gemini-2.5-flash as returned by ListModels
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        // List of models to try. 1.5-flash is standard for prod, 2.5-flash works for your local key.
+        const models = ["gemini-1.5-flash", "gemini-2.5-flash"];
 
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                systemInstruction: {
-                    role: "system",
-                    parts: [{ text: SYSTEM_INSTRUCTION }],
-                },
-                contents: sanitizedContents,
-                generationConfig: {
-                    temperature: 0.6,
-                    maxOutputTokens: 200,
-                },
-            }),
-            cache: "no-store",
+        let response;
+        let usedModel;
+
+        for (const model of models) {
+            console.log(`Trying model: ${model}`);
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+            response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    systemInstruction: {
+                        role: "system",
+                        parts: [{ text: SYSTEM_INSTRUCTION }],
+                    },
+                    contents: sanitizedContents,
+                    generationConfig: {
+                        temperature: 0.6,
+                        maxOutputTokens: 200,
+                    },
+                }),
+                cache: "no-store",
+            });
+
+            if (response.ok) {
+                usedModel = model;
+                break;
+            }
+
+            // If we get here, the model failed. Log it and try the next one.
+            const errorText = await response.text();
+            console.warn(`Model ${model} failed:`, errorText);
         }
-        );
 
-        const raw = await response.text();
-
-        if (!response.ok) {
-            console.error("Gemini error:", raw);
+        if (!response || !response.ok) {
+            // If all models failed, return the error from the last attempt (or generic)
+            const errorDetails = response ? await response.text() : "All models failed";
+            console.error("All Gemini models failed. Last error:", errorDetails);
             return NextResponse.json(
-                { error: "Gemini API failed", details: raw },
-                { status: response.status }
+                { error: "Gemini API failed", details: errorDetails },
+                { status: response ? response.status : 500 }
             );
         }
+
+        const raw = await response.text();
+        console.log(`Success using model: ${usedModel}`);
 
         return NextResponse.json(JSON.parse(raw));
     } catch (err) {
