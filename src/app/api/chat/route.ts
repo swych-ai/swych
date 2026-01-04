@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
 
         let response;
         let usedModel;
+        let lastError = "";
 
         for (const model of models) {
             console.log(`Trying model: ${model}`);
@@ -75,16 +76,15 @@ export async function POST(req: NextRequest) {
             }
 
             // If we get here, the model failed. Log it and try the next one.
-            const errorText = await response.text();
-            console.warn(`Model ${model} failed:`, errorText);
+            lastError = await response.text();
+            console.warn(`Model ${model} failed:`, lastError);
         }
 
         if (!response || !response.ok) {
-            // If all models failed, return the error from the last attempt (or generic)
-            const errorDetails = response ? await response.text() : "All models failed";
-            console.error("All Gemini models failed. Last error:", errorDetails);
+            // If all models failed, return the error from the last attempt
+            console.error("All Gemini models failed. Last error:", lastError);
             return NextResponse.json(
-                { error: "Gemini API failed", details: errorDetails },
+                { error: "Gemini API failed", details: lastError },
                 { status: response ? response.status : 500 }
             );
         }
