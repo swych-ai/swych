@@ -1,5 +1,5 @@
 export interface ChatMessage {
-  role: "user";
+  role: "user" | "model";
   parts: { text: string }[];
 }
 

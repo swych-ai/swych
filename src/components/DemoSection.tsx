@@ -9,9 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { sendMessageToGemini, getWelcomeMessage } from "@/api/gemini-chatbot";
+import { sendMessageToGemini, getWelcomeMessage, ChatMessage as GeminiMessage } from "@/api/gemini-chatbot";
 
-// Add your Gemini API key here or use environment variable
 // Add your Gemini API key here or use environment variable
 // Server-side API key is used
 
@@ -19,11 +18,6 @@ import { sendMessageToGemini, getWelcomeMessage } from "@/api/gemini-chatbot";
 interface ChatMessage {
   type: "user" | "ai";
   text: string;
-}
-
-interface GeminiMessage {
-  role: 'user' | 'model';
-  parts: { text: string }[];
 }
 
 export default function DemosSection() {
@@ -36,7 +30,7 @@ export default function DemosSection() {
 
   // Voice demo dialog state
   const [isVoiceDemoOpen, setIsVoiceDemoOpen] = useState(false);
-  const [voiceDemoForm, setVoiceDemoForm] = useState({ name: "", email: "" });
+  const [voiceDemoForm, setVoiceDemoForm] = useState({ name: "", email: "", industry: "" });
   const [isSubmittingDemo, setIsSubmittingDemo] = useState(false);
   const [demoSubmitSuccess, setDemoSubmitSuccess] = useState(false);
   const [demoSubmitError, setDemoSubmitError] = useState("");
