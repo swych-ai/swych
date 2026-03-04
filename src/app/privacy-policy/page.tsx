@@ -1,6 +1,12 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'Learn how Swych.ai collects, uses, and protects your personal information. Read our comprehensive Privacy Policy.',
+};
 
 export default function PrivacyPolicy() {
   return (

@@ -1,6 +1,12 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description: 'Read the Terms of Service for using Swych.ai. Understand your rights and responsibilities when using our AI-powered business solutions.',
+};
 
 export default function TermsOfService() {
   return (
