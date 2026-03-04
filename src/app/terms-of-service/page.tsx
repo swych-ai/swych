@@ -133,7 +133,7 @@ export default function TermsOfService() {
                 </p>
                 <p className="text-gray-700 leading-relaxed mt-2">
                   <strong>Email:</strong> theswych.ai@gmail.com<br />
-                  <strong>Website:</strong> www.swych.ai
+                  <strong>Website:</strong> getswych.com
                 </p>
               </section>
             </div>
